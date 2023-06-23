@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Tauri App</title>
+		<script type="module" src="/src/main.ts" defer></script>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Oxygen+Mono&display=swap');
+			:root {
+				font-family: 'Oxygen Mono', monospace;
+				--sixty: #d7c7ac;
+				--thirty: #020002;
+				--ten: #627a99;
+				--low-opacity-ten: rgba(98, 122, 153, 0.75);
+				--heading: 2rem;
+			}
+
+			body,
+			main {
+				height: 100%;
+				width: 100%;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin: 0;
+				padding: 0;
+				background-color: var(--sixty);
+			}
+
+			section {
+				height: 30rem;
+				width: 100%;
+				margin-top: 3rem;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				flex-direction: column;
+				gap: 1rem;
+			}
+
+			#titleContainer,
+			#timerContainer,
+			#breakContainer {
+				width: 100%;
+				height: 5rem;
+			}
+
+			#titleContainer {
+				margin-top: 5rem;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			h1 {
+				margin-top: 1rem;
+				font-size: var(--heading);
+				color: var(--thirty);
+			}
+
+			#timerContainer {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			#timerContainer > span {
+				font-size: 5rem;
+				color: var(--thirty);
+			}
+
+			#breakContainer {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				gap: 0.5rem;
+			}
+
+			#controlsContainer {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			svg {
+				width: 3rem;
+				aspect-ratio: 1 / 1;
+			}
+
+			#start-button,
+			#pause-button {
+				display: block;
+				stroke: var(--ten);
+				fill: var(--sixty);
+				transition: filter 250ms linear;
+			}
+
+			#start-button:hover,
+			#pause-button:hover {
+				cursor: pointer;
+				filter: drop-shadow(0 0 2rem var(--low-opacity-ten));
+			}
+
+			#startContainer {
+				display: block;
+			}
+
+			#pause-button {
+				display: none;
+			}
+
+			.interval {
+				width: 1.25rem;
+				height: 1.25rem;
+				border-radius: 50%;
+				box-sizing: border-box;
+				border: 0.125rem solid var(--thirty);
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<section>
+				<div id="titleContainer">
+					<h1 id="title">work time</h1>
+				</div>
+				<div id="timerContainer">
+					<span id="minute">25</span>
+					<span id="delimiter">:</span>
+					<span id="second">00</span>
+				</div>
+				<div id="breakContainer">
+					<span class="interval"></span>
+					<span class="interval"></span>
+					<span class="interval"></span>
+					<span class="interval"></span>
+				</div>
+				<div id="controlsContainer">
+					<svg viewBox="0 0 256 256" id="startContainer">
+						<path d="M228.1,121.2,84.2,33.2A8,8,0,0,0,72,40V216a8,8,0,0,0,12.2,6.8l143.9-88A7.9,7.9,0,0,0,228.1,121.2Z" stroke-width="12" id="start-button" />
+					</svg>
+					<svg viewbox="0 0 256 256" id="pause-button">
+						<path d="M 48 40 L 96 40 L 96 216 L 48 216 L 48 40 z M 160 40 L 208 40 L 208 216 L 160 216 L 160 40 z" stroke-width="12" />
+					</svg>
+				</div>
+			</section>
+		</main>
+	</body>
+</html>
