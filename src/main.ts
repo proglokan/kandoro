@@ -1,100 +1,130 @@
+// TIMER EXTENDS INTERVAL? EACH INTERVAL HAS A TIMER
+class Timer {
+  private _interval: Interval;
+
+  constructor(interval: Interval) {
+    this._interval = interval;
+  }
+
+  start(): void {
+    this._interval.start();
+    console.log('started');
+  }
+
+  pause(): void {
+    this._interval.pause();
+    console.log('paused');
+  }
+
+  continue(): void {
+    this._interval.continue();
+    console.log('continued');
+  }
+}
 
 class Interval {
   private _minuteValue: number;
   private _secondValue: number;
   private _minutesDisplay: HTMLSpanElement | null = null;
   private _secondsDisplay: HTMLSpanElement | null = null;
-  public paused: boolean = false;
+  private _timerId: number | null = null;
+  private _paused: boolean = false;
 
   constructor(minutesDisplay: HTMLSpanElement | null, secondsDisplay: HTMLSpanElement | null) {
     this._minutesDisplay = minutesDisplay;
-    minutesDisplay?.textContent ? this._minuteValue = +minutesDisplay.textContent : this._minuteValue = 25;
+    this._minuteValue = minutesDisplay ? +minutesDisplay.textContent! : 25;
     this._secondsDisplay = secondsDisplay;
-    secondsDisplay?.textContent ? this._secondValue = +secondsDisplay.textContent : this._secondValue = 0;
+    this._secondValue = secondsDisplay ? +secondsDisplay.textContent! : 0;
   }
 
   start(): void {
-    const timer = setInterval(() => {
-      if (this.paused) clearInterval(timer);
+    this._timerId = setInterval(() => {
+      if (this._paused) return;
+
       if (this._secondValue === 0) {
         this._secondValue = 59;
         --this._minuteValue;
       } else --this._secondValue;
 
-      this._minuteValue < 10 ? this._minutesDisplay!.textContent = `0${this._minuteValue+''}` : this._minutesDisplay!.textContent = this._minuteValue+'';
-      this._secondValue < 10 ? this._secondsDisplay!.textContent = `0${this._secondValue+''}` : this._secondsDisplay!.textContent = this._secondValue+'';
+      this.updateDisplay();
 
-      if (this._minuteValue === 0 && this._secondValue === 0) clearInterval(timer);
+      if (this._minuteValue === 0 && this._secondValue === 0) this.pause();
 
     }, 1000);
   }
 
   pause(): void {
-    this.paused = true;
+    if (this._timerId) {
+      clearInterval(this._timerId);
+      this._timerId = null;
+      this._paused = true;
+    }
   }
 
   continue(): void {
-    
+    this._paused = false;
+      this.start();
   }
 
+  private updateDisplay(): void {
+    if (this._minutesDisplay) {
+      this._minutesDisplay.textContent = this._minuteValue < 10 ? `0${this._minuteValue}` : `${this._minuteValue}`;
+    }
+    if (this._secondsDisplay) {
+      this._secondsDisplay.textContent = this._secondValue < 10 ? `0${this._secondValue}` : `${this._secondValue}`;
+    }
+  }
 }
+
+const interval = new Interval(document.querySelector('#minute'), document.querySelector('#second'));
+const timer = new Timer(interval);
 
 function disableStartButton() {
   const startContainer: SVGPathElement | null = document.querySelector('#startContainer');
   if (startContainer) startContainer.style.display = 'none';
-    
 }
 
 function enablePauseButton() {
   const pauseButton: SVGElement | null = document.querySelector('#pause-button');
   if (pauseButton) pauseButton.style.display = 'block';
   pauseButton?.addEventListener('click', () => {
-    pauseTimer();
+    disablePauseButton();
+    timer.pause();
+    enableContinueButton();
   });
 }
 
-function startTimer() {
-  disableStartButton(), enablePauseButton();
-  const minute: HTMLSpanElement | null = document.querySelector('#minute');
-  const second: HTMLSpanElement | null = document.querySelector('#second');
-
-  sleep(1000);
-
-  let minuteContent: string | null | undefined = minute?.textContent, secondContent: string | null | undefined = second?.textContent;
-  let minuteValue = minuteContent ? +minuteContent : 25, secondValue = secondContent ? +secondContent : 0;
-
-  const timer = setInterval(() => {
-    
-    if (secondValue === 0) {
-      secondValue = 59;
-      --minuteValue;
-    } else --secondValue;
-
-    minuteValue < 10 ? minute!.textContent = `0${minuteValue+''}` : minute!.textContent = minuteValue+'';
-    secondValue < 10 ? second!.textContent = `0${secondValue+''}` : second!.textContent = secondValue+'';
-
-    if (minuteValue === 0 && secondValue === 0) {
-      clearInterval(timer);
-    }
-
-  }, 1000);
+function disablePauseButton() {
+  const pauseButton: SVGElement | null = document.querySelector('#pause-button');
+  if (pauseButton) pauseButton.style.display = 'none';
 }
 
-function pauseTimer() {
-  console.log(true);
+function enableContinueButton() {
+  const startContainer: SVGPathElement | null = document.querySelector('#startContainer');
+  if (startContainer) startContainer.style.display = 'block';
+  startContainer?.addEventListener('click', () => {
+    disableContinueButton();
+    timer.continue();
+    enablePauseButton();
+  });
 }
 
-function sleep(ms: number) {
+function disableContinueButton() {
+  disableStartButton();
+}
+
+function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function addListeners() {
+function addListeners(): void {
   const playButton: SVGPathElement | null = document.querySelector('#start-button');
     playButton?.addEventListener('click', () => {
-      startTimer();
+      disableStartButton();
+      enablePauseButton();
+      timer.start();
     });
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  addListeners();
-});
+addListeners();
+
