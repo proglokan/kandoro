@@ -1,4 +1,44 @@
 
+class Interval {
+  private _minuteValue: number;
+  private _secondValue: number;
+  private _minutesDisplay: HTMLSpanElement | null = null;
+  private _secondsDisplay: HTMLSpanElement | null = null;
+  public paused: boolean = false;
+
+  constructor(minutesDisplay: HTMLSpanElement | null, secondsDisplay: HTMLSpanElement | null) {
+    this._minutesDisplay = minutesDisplay;
+    minutesDisplay?.textContent ? this._minuteValue = +minutesDisplay.textContent : this._minuteValue = 25;
+    this._secondsDisplay = secondsDisplay;
+    secondsDisplay?.textContent ? this._secondValue = +secondsDisplay.textContent : this._secondValue = 0;
+  }
+
+  start(): void {
+    const timer = setInterval(() => {
+      if (this.paused) clearInterval(timer);
+      if (this._secondValue === 0) {
+        this._secondValue = 59;
+        --this._minuteValue;
+      } else --this._secondValue;
+
+      this._minuteValue < 10 ? this._minutesDisplay!.textContent = `0${this._minuteValue+''}` : this._minutesDisplay!.textContent = this._minuteValue+'';
+      this._secondValue < 10 ? this._secondsDisplay!.textContent = `0${this._secondValue+''}` : this._secondsDisplay!.textContent = this._secondValue+'';
+
+      if (this._minuteValue === 0 && this._secondValue === 0) clearInterval(timer);
+
+    }, 1000);
+  }
+
+  pause(): void {
+    this.paused = true;
+  }
+
+  continue(): void {
+    
+  }
+
+}
+
 function disableStartButton() {
   const startContainer: SVGPathElement | null = document.querySelector('#startContainer');
   if (startContainer) startContainer.style.display = 'none';
