@@ -1,130 +1,135 @@
-// TIMER EXTENDS INTERVAL? EACH INTERVAL HAS A TIMER
-class Timer {
-  private _interval: Interval;
+'use strict';
 
-  constructor(interval: Interval) {
-    this._interval = interval;
+
+class Session {
+  public sessionStatus: HTMLDivElement | null = null;
+  public _newSessionButton: HTMLButtonElement | null = null;
+  constructor (sessionStatus: HTMLDivElement | null, newSessionButton: HTMLButtonElement | null) {
+    this.sessionStatus = sessionStatus;
+    this._newSessionButton = newSessionButton;
   }
 
-  start(): void {
-    this._interval.start();
-    console.log('started');
+  removeButton(): void {
+    if (this._newSessionButton) this._newSessionButton.style.display = 'none';
   }
 
-  pause(): void {
-    this._interval.pause();
-    console.log('paused');
+  inProgress(): void {
+    this.sessionStatus?.classList.add('inProgress');
   }
 
-  continue(): void {
-    this._interval.continue();
-    console.log('continued');
+  complete(): void {
+    this.sessionStatus?.classList.remove('inProgress');
+    this.sessionStatus?.classList.add('complete');
+    this.reset();
+  }
+
+  reset(): void {
+    if (this._newSessionButton) this._newSessionButton.style.display = 'block';
   }
 }
 
-class Interval {
-  private _minuteValue: number;
-  private _secondValue: number;
-  private _minutesDisplay: HTMLSpanElement | null = null;
-  private _secondsDisplay: HTMLSpanElement | null = null;
-  private _timerId: number | null = null;
-  private _paused: boolean = false;
+class Timer {
+  private _startButton: SVGPathElement | null;
+  private _stopButton: SVGElement | null;
+  private _minutesSpan: HTMLSpanElement | null;
+  private _secondsSpan: HTMLSpanElement | null;
+  private _intervalId: number | undefined;
+  public minutesValue: number;
+  public secondsValue: number;
+  public session: Session;
+  constructor(startButton: SVGPathElement, stopButton: SVGElement, minutesSpan: HTMLSpanElement, secondsSpan: HTMLSpanElement, minutesValue: number, secondsValue: number, session: Session) {
+    this._startButton = startButton;
+    this._stopButton = stopButton;
+    this._minutesSpan = minutesSpan;
+    this._secondsSpan = secondsSpan;
+    this.minutesValue = minutesValue;
+    this.secondsValue = secondsValue;
+    this._startButton?.addEventListener('click', () => {
+      this.start(), this.deactivate();
+    });
+    this._stopButton?.addEventListener('click', () => {
+      this.stop(), this.reactivate();
+    });
+    this.session = session;
+  }
 
-  constructor(minutesDisplay: HTMLSpanElement | null, secondsDisplay: HTMLSpanElement | null) {
-    this._minutesDisplay = minutesDisplay;
-    this._minuteValue = minutesDisplay ? +minutesDisplay.textContent! : 25;
-    this._secondsDisplay = secondsDisplay;
-    this._secondValue = secondsDisplay ? +secondsDisplay.textContent! : 0;
+  activate(): void {
+    if (this._startButton) this._startButton.style.display = 'block';
+  }
+
+  deactivate(): void {
+    if (this._startButton) this._startButton.style.display = 'none';
+    if (this._stopButton) this._stopButton.style.display = 'block';
+  }
+
+  reactivate(): void {
+    if (this._stopButton) this._stopButton.style.display = 'none';
+    if (this._startButton) this._startButton.style.display = 'block';
   }
 
   start(): void {
-    this._timerId = setInterval(() => {
-      if (this._paused) return;
+    this._intervalId = setInterval(() => {
 
-      if (this._secondValue === 0) {
-        this._secondValue = 59;
-        --this._minuteValue;
-      } else --this._secondValue;
+      if (this.minutesValue === 0 && this.secondsValue === 0) {
+        this.stop(), this.complete();
+        return;
+      }
 
-      this.updateDisplay();
+      if (this.secondsValue === 0) {
+        this.minutesValue--, this.secondsValue = 59, this.updateTime(this.minutesValue, this.secondsValue);
+        return;
+      }
 
-      if (this._minuteValue === 0 && this._secondValue === 0) this.pause();
-
+      --this.secondsValue;
+      this.updateTime(this.minutesValue, this.secondsValue);
     }, 1000);
   }
 
-  pause(): void {
-    if (this._timerId) {
-      clearInterval(this._timerId);
-      this._timerId = null;
-      this._paused = true;
-    }
+  updateTime(minutes: number, seconds: number): void {
+    if (this._minutesSpan) minutes < 10 ? this._minutesSpan.textContent = `0${minutes}` : this._minutesSpan.textContent = `${minutes}`;
+    if (this._secondsSpan) seconds < 10 ? this._secondsSpan.textContent = `0${seconds}` : this._secondsSpan.textContent = `${seconds}`;
   }
 
-  continue(): void {
-    this._paused = false;
-      this.start();
+  stop(): void {
+    clearInterval(this._intervalId);
+    this._intervalId = undefined;
   }
 
-  private updateDisplay(): void {
-    if (this._minutesDisplay) {
-      this._minutesDisplay.textContent = this._minuteValue < 10 ? `0${this._minuteValue}` : `${this._minuteValue}`;
-    }
-    if (this._secondsDisplay) {
-      this._secondsDisplay.textContent = this._secondValue < 10 ? `0${this._secondValue}` : `${this._secondValue}`;
-    }
+  complete(): void {
+    this.reset();
+    if (this._stopButton) this._stopButton.style.display = 'none';
+    this.session.complete();
+  }
+
+  reset(): void {
+    this.minutesValue = 25, this.secondsValue = 0;
+    this.updateTime(this.minutesValue, this.secondsValue);
   }
 }
 
-const interval = new Interval(document.querySelector('#minute'), document.querySelector('#second'));
-const timer = new Timer(interval);
-
-function disableStartButton() {
-  const startContainer: SVGPathElement | null = document.querySelector('#startContainer');
-  if (startContainer) startContainer.style.display = 'none';
-}
-
-function enablePauseButton() {
-  const pauseButton: SVGElement | null = document.querySelector('#pause-button');
-  if (pauseButton) pauseButton.style.display = 'block';
-  pauseButton?.addEventListener('click', () => {
-    disablePauseButton();
-    timer.pause();
-    enableContinueButton();
-  });
-}
-
-function disablePauseButton() {
-  const pauseButton: SVGElement | null = document.querySelector('#pause-button');
-  if (pauseButton) pauseButton.style.display = 'none';
-}
-
-function enableContinueButton() {
-  const startContainer: SVGPathElement | null = document.querySelector('#startContainer');
-  if (startContainer) startContainer.style.display = 'block';
-  startContainer?.addEventListener('click', () => {
-    disableContinueButton();
-    timer.continue();
-    enablePauseButton();
-  });
-}
-
-function disableContinueButton() {
-  disableStartButton();
-}
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function addListeners(): void {
-  const playButton: SVGPathElement | null = document.querySelector('#start-button');
-    playButton?.addEventListener('click', () => {
-      disableStartButton();
-      enablePauseButton();
-      timer.start();
-    });
+const newSessionButton: HTMLButtonElement | null = document.querySelector('#newSession');
+newSessionButton?.addEventListener('click', () => {
+  const sessionIndex: number = getSessionIndex();
+  const sessionStatus = document.querySelector(`#session${sessionIndex}`) as HTMLDivElement;
+  const session = new Session(sessionStatus, newSessionButton);
+  session.removeButton();
+  session.inProgress();
+  const startButton = document.querySelector('#startContainer') as SVGPathElement;
+  const stopButton = document.querySelector('#stopButton') as SVGElement;
+  const minutesSpan = document.querySelector('#minutes') as HTMLSpanElement;
+  const secondsSpan = document.querySelector('#seconds') as HTMLSpanElement;
+  const minutesValue = minutesSpan.textContent ? +minutesSpan.textContent : 25;
+  const secondsValue = secondsSpan.textContent ? +secondsSpan.textContent : 0;
+  const timer: Timer = new Timer(startButton, stopButton, minutesSpan, secondsSpan, minutesValue, secondsValue, session);
+  timer.activate();
+});
+
+function getSessionIndex(): number {
+  const sessionCount: NodeList | null = document.querySelectorAll('.complete');
+  return sessionCount?.length;
 }
-
-addListeners();
-
