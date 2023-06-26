@@ -1,10 +1,13 @@
 'use strict';
 
+import { sendNotification } from '@tauri-apps/api/notification';
 
 class Session {
   public sessionStatus: HTMLDivElement | null = null;
   public _newSessionButton: HTMLButtonElement | null = null;
-  constructor (sessionStatus: HTMLDivElement | null, newSessionButton: HTMLButtonElement | null) {
+  readonly sessionIndex: number;
+  constructor (sessionIndex: number, sessionStatus: HTMLDivElement | null, newSessionButton: HTMLButtonElement | null) {
+    this.sessionIndex = sessionIndex;
     this.sessionStatus = sessionStatus;
     this._newSessionButton = newSessionButton;
   }
@@ -21,6 +24,7 @@ class Session {
     this.sessionStatus?.classList.remove('inProgress');
     this.sessionStatus?.classList.add('complete');
     this.reset();
+    sendNotification({ title: 'kandoro', body: `Work session ${this.sessionIndex} is complete!` });
   }
 
   reset(): void {
@@ -107,16 +111,11 @@ class Timer {
   }
 }
 
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 const newSessionButton: HTMLButtonElement | null = document.querySelector('#newSession');
 newSessionButton?.addEventListener('click', () => {
   const sessionIndex: number = getSessionIndex();
   const sessionStatus = document.querySelector(`#session${sessionIndex}`) as HTMLDivElement;
-  const session = new Session(sessionStatus, newSessionButton);
+  const session = new Session(sessionIndex, sessionStatus, newSessionButton);
   session.removeButton();
   session.inProgress();
   const startButton = document.querySelector('#startContainer') as SVGPathElement;

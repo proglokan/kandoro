@@ -12,6 +12,9 @@
   },
   "tauri": {
     "allowlist": {
+      "notification": {
+        "all": true
+      },
       "all": false,
       "shell": {
         "all": false,
@@ -36,9 +39,9 @@
     "windows": [
       {
         "fullscreen": false,
-        "resizable": false,
+        "resizable": true,
         "title": "kandoro",
-        "width": 495,
+        "width": 500,
         "height": 660
       }
     ]
