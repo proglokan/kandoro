@@ -24,7 +24,7 @@ class Session {
     this.sessionStatus?.classList.remove('inProgress');
     this.sessionStatus?.classList.add('complete');
     this.reset();
-    sendNotification({ title: 'kandoro', body: `Work session ${this.sessionIndex} is complete!` });
+    sendNotification({ title: 'New session completed!', body: `Total sessions completed: ${this.sessionIndex + 1}`, icon: 'assets/icons/icon-512x512.png' });
   }
 
   reset(): void {
